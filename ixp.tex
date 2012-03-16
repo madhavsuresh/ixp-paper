@@ -1,4 +1,5 @@
 \documentclass{acm_proc_article-sp}
+\usepackage{hyperref}
 
 \begin{document}
 \setcounter{secnumdepth}{5}
@@ -75,7 +76,7 @@ to discover remote peers. We designed and implemented a tool that can determine 
 given a peering list of an IXP. Using traceroutes obtained from Dasu \cite{Sanchez:2011}, geolocation
 techniques and reverse dns, we were able to determine remote peerings with 
 %TODO: 
-(WHAT?) level of accuracy.
+around 50\% level of accuracy.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -89,15 +90,16 @@ techniques and reverse dns, we were able to determine remote peerings with
 
 \section{Introduction}
 
-\{include stuff about IXPs and whatnot here\}
-
+Internet eXchange Points (IXPs) are critical to the fabric of the internet. They provide a place 
+for smaller ASes to peer without having to pay through their noses to tier one providers. Work has
+    been done to identify the peering matrices at these IXPs \cite{Augustin:2009}, however no work has 
+    gone into finding remote peerings.
 Remote peering at IXPs is the practice of peering without a collocated router at an IXP. Smaller ASs
 who want to bypass transit links can use remote peering as a method to lower cost and meet geographic 
 diversity requirements. Currently mapping tools exists for determining peering matrices at 
 IXPs however nothing exists to determine which peers are remote peers.
 
-This paper presents the design, implementation, and evaluation of a programmatic remote peer finder
-that is capable of determining remote peers with a (WHAT?) level of confidence. 
+This paper presents the design, implementation, and evaluation of a programmatic remote peer finder.
 
 
 
@@ -141,6 +143,7 @@ CBG is very similar to trilateration - it uses multilateration, however it attem
 to geographic distance constraints and then applies multilateration to infer the real location. \cite{Gueye:2006}
 A more in depth discussion can be found in Gueye et al. \cite{Gueye:2006}
 \paragraph{Apollonius}
+See \href{http://en.wikipedia.org/wiki/Problem\_of\_Apollonius}{Problem of Apollonius} for an in depth discussion.
 \paragraph{GeoIP}
 GeoIP has an enormous database of IP's and geolocation and does a simply key search. This can obviously lead
 to great inaccuracy because of stale data, and even incorrect data
@@ -149,7 +152,7 @@ to great inaccuracy because of stale data, and even incorrect data
 \subsubsection{Reverse DNS Geolocation}
 Reverse DNS can be extremely powerful because DNS information can be used to get the general locale of a host. \cite{Spring:2004}
 Reverse DNS geolocation works by looking at the hostname and matching it against a library of prefixes to determine an estimate as to the 
-location. This works because ASs generally have a prefix \{MARIO IS THIS THE RIGHT WORD\} e.g. comcast hosts are ***.***.comcast.net
+location. This works because ASs generally have a substring in the domain name, e.g. comcast hosts are ***.***.comcast.net
 The authors of tulip noted that knowing the different geolocation techniques perform differently based on location
 and provisioning.\cite{TulipInfoComm} 
 For future work, armed with the locale of a host, we can elimiate certain geolocation techniques that we know will hurt the average.
@@ -179,7 +182,39 @@ After these heuristics we would either label suspected ASes as remote peers if t
 
 
 \section{Evaluation}
-\label{sec:approach}
+\label{sec:evaluation}
+We evaluated our tool against using data available from AMS-IX, an IXP from Amersterdam, as ground truth.
+AMS-IX has 483 member ASes with 410 directly connected, and 73 remotely connected.
+We were able to identify around 8,000 peerings, 100 of which involved remote ASes.
+\subsection{Accuracy of Tool}
+Our tool was able to correctly around fifty percent of the remote peerings.
+\{FILL OUT WITH ACTUAL DATA\}
+\section{Discussion}
+We were faced with a couple of challenges that affected the confidence of our results.
+\subsection{Long Haul Link Issues}
+Our tool came up with an extremely high number of false positives for remote peerings. As first step, we can eliminate this
+through using more traceroutes through the ASes and only taking an average of the latencies. While we did only identify peers as 
+remote if they consistently were categorized as long haul, we didnt take averages from specific routes. Doing this could help eliminate 
+outliers due to congestion and other network issues. Something we found was that peers not defined as ``remote'' were using long haul links
+to connect to the IXP. This underlines the fact that remote peers has a purely economic meaning. We are still looking for a way to battle this,
+because right now our tool simply finds long haul links. In addition the use of MPLS confuses traceroutes as sometimes MPLS routers don't 
+return the outgoing interface. This results in incomplete traceroutes, which greatly confuses our tool. For example, for a peer that was confirmed to be 
+a normal peer at the IXP, the traceroute indicated that a hop went from the incoming AS, through the IXP, and then to the AS in another country. This was not corroborated by the ground truth, so we explained it as being
+an artifact of MPLS. When running paris traceroutes on our machines, we weren't able to get
+MPLS labels - only going through LookingGlass nodes seemed to work. 
+
+What we need is another variable to add other than long latency jumps, since these seem to be prevalent in non remote peers.
+\subsection{Geolocation}
+Currently Tulip is under development, so it changed as we used it over time. Tulip provides an excellent set of data points, but discussion with the creators of the tool indicated that there are some bugs that 
+are still prevalent. This reduces our confidence in the geolocation, and may help explain the erratic nature of our results. In the future it would be interesting to implement a geolocation 
+technique on Dasu. Currently Dasu is unaware of the location of each of the nodes, but perhaps by adding a field for users to enter their location, or even performing CBG on the nodes to determine their location might help.
+A setup where nodes were added as vantage points for geolocation as soon as their location was determined could be interesting. Of course the geographic diversity of Dasu could prove to be a problem, but hopefully it would
+be better than what existing tools provide. In addition some Dasu nodes might not be in well provisioned networks which could cause issues with being a vantage point in a geolocation scheme. 
+
+In addition getting a relevant library for the reverse dns geolocation could be useful as it would help
+us narrow down which method to use and which vantage points to select for geolocation.
+What we learned is that our tool needs to be more intelligent than what it currently is. Our approach is just one heuristic applied after another, however a more intelligent design would
+choose how to apply a heuristic based on the previous result. This could prove to be more powerful and hopefully reduce the noise in our results.
 
 \section{Future Work}
 \label{sec:future}
