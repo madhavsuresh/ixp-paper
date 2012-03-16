@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{Augustin:2009}
+B.~Augustin, B.~Krishnamurthy, and W.~Willinger.
+\newblock Ixps: mapped?
+\newblock In {\em Proceedings of the 9th ACM SIGCOMM conference on Internet
+  measurement conference}, IMC '09, pages 336--349, New York, NY, USA, 2009.
+  ACM.
+
+\bibitem{Sanchez:2011}
+M.~A. S\'{a}nchez, J.~S. Otto, Z.~S. Bischof, and F.~E. Bustamante.
+\newblock Dasu - isp characterization from the edge: a bittorrent
+  implementation.
+\newblock In {\em Proceedings of the ACM SIGCOMM 2011 conference}, SIGCOMM '11,
+  pages 454--455, New York, NY, USA, 2011. ACM.
+
+\bibitem{Spring:2004}
+N.~Spring, R.~Mahajan, D.~Wetherall, and T.~Anderson.
+\newblock Measuring isp topologies with rocketfuel.
+\newblock {\em IEEE/ACM Trans. Netw.}, 12(1):2--16, Feb. 2004.
+
+\end{thebibliography}

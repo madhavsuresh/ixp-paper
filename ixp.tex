@@ -1,6 +1,7 @@
 \documentclass{acm_proc_article-sp}
 
 \begin{document}
+\setcounter{secnumdepth}{5}
 
 \title{Determining Remote Peerings at IXPs}
 %
@@ -131,13 +132,42 @@ Given the IPs that we suspect to be longhaul links we use geolocation on the IP 
 the interface is located. If the interface is not located in the same area, the we have found a 
 remote peering, if it is we discard the IP. To do the geolocation we used the tulip tool from the Stanford
 National Accerleator Lab. One of the problems we face with geolocation was the 
-accuracy which we 
+accuracy from the various geolocation techniques. Tulip provides for four geolocation techniques: Apollonius,Trilateration, Geoip, and constraint based geolocation (CBG).
+\paragraph{Trilateration}
+Trilateration uses three vantage points in order to pin point the desired host. The estimation technique tries to find the intersection of 
+circles with the radius determined by the latency between the two hosts. Problems can arise with this technique because of routing delays
+which can lead to latencies that don't necessarily correspond with absolute distance. For example, a latency measurement can be slowed down by queueing delay
+making the distance seem much longer than ground truth to the algorithm. Multilateration is a technique that attempts to overcome this through using more than three
+vantage points (three is simply a minimum requirement), CBG includes this, however tulip's support for CBG was intermittent.
+\paragraph{Constraint based Geolocation}
+CBG is very similar to trilateration - it uses multilateration, however it attempts to transform delay measurements 
+to geographic distance constraints and then applies multilateration to infer the real location. \cite{Gueye:2006}
+A more in depth discussion can be found in Gueye et al. \cite{Gueye:2006}
+\paragraph{Apollonius}
+\paragraph{GeoIP}
+GeoIP has an enormous database of IP's and geolocation and does a simply key search. This can obviously lead
+to great inaccuracy because of stale data, and even incorrect data
 
-\subsubsection{Reverse DNS}
 
-\section{Usage}
+\subsubsection{Reverse DNS Geolocation}
+Reverse DNS can be extremely powerful because DNS information can be used to get the general locale of a host. \cite{Spring:2004}
+Reverse DNS geolocation works by looking at the hostname and matching it against a library of prefixes to determine an estimate as to the 
+location. This works because ASs generally have a prefix \{MARIO IS THIS THE RIGHT WORD\} e.g. comcast hosts are ***.***.comcast.net
+The authors of tulip noted that knowing the different geolocation techniques perform differently based on location
+and provisioning.\cite{TulipInfoComm} 
+For future work, armed with the locale of a host, we can elimiate certain geolocation techniques that we know will hurt the average.
 
-\section{Approach}
+
+
+\section{Implementation}
+Our protoype implements the first two stages that we outlined. We were unable to complete the reverse dns step, as existing tools 
+had stale libraries that didn't match many of the hosts we had. For the long haul links we wrote a java program that analyzed traceroutes
+from Dasu and for the geolocation. We used tulip as well as google maps api to determine country location in a python script.
+A location esimate was accepted only if the country was the same for two out of the three techniques.
+ As mentioned in the previous discussion for future work we plan on 
+narrowing down which of the geolocation techniques are valid for a given region first in order to get more results.
+
+\section{Evaluation}
 \label{sec:approach}
 
 \section{Future Work}
