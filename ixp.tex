@@ -88,8 +88,52 @@ techniques and reverse dns, we were able to determine remote peerings with
 
 \section{Introduction}
 
-\section{System Design}
+\{include stuff about IXPs and whatnot here\}
 
+Remote peering at IXPs is the practice of peering without a collocated router at an IXP. Smaller ASs
+who want to bypass transit links can use remote peering as a method to lower cost and meet geographic 
+diversity requirements. Currently mapping tools exists for determining peering matrices at 
+IXPs however nothing exists to determine which peers are remote peers.
+
+This paper presents the design, implementation, and evaluation of a programmatic remote peer finder
+that is capable of determining remote peers with a (WHAT?) level of confidence. 
+
+
+
+\section{System Design}
+We implemented a multifiltering mechanism to avoid false negatives and increase confidence in our results.
+First we determine which peerings we suspect to be those of long-haul links, 
+then we verify that finding with geolocation. For added confidence,
+we augment the mappings with reverse DNS names. 
+
+\subsection{System Architecture}
+\subsubsection{Determining Long Haul Links}
+In a traditional IXP setup, all peers are present at the physical location of the IXP. 
+As such every peer has a physical interface at router in the IXP, and the latency hop between
+to peers comes directly from the latency of the router. Remote peers however are not physically 
+present at the IXP. We found that many remote peers were connected through an MPLS tunnel.
+MPLS is a layer two mechanism which bypasses traditional layer three routing, and sends data directly
+from source to destination. Since MPLS is a layer two protocol, traditional traceroutes fail to capture when 
+they traverse MPLS links. Unfortunately our dataset from Dasu only included traditional traceroutes. Paris traceroutes
+are able to determine MPLS links, and we were able to run tests on LookingGlass nodes that offered them. This had to be done
+manually so it was not practical. In the future we hope to add paris traceroutes to Dasu to facilitate this. 
+In addition not all remote peers use MPLS links, so another method was also necessary to avoid a large number of
+false negatives.  
+We made the assumption that a peer that experiences a larger than average
+latency hop is most likely a remote peer. There were of course false positives, but 
+through our filtering process we hoped to remove of those. With a set of traceroutes from
+Dasu \cite{Sanchez:2011} we narrowed down the traces to routes that were known to go through IXPs.
+We then set a threshold for latency around \{WHAT WAS THE LATENCY?\}ms which we determined through
+looking at the average trace of peers connected at the IXP. At this point the system has ouputted 
+what it thinks are long haul links. It then moves to corroborate this set against geolocation data.
+\subsubsection{Geolocation}
+Given the IPs that we suspect to be longhaul links we use geolocation on the IP to determine where
+the interface is located. If the interface is not located in the same area, the we have found a 
+remote peering, if it is we discard the IP. To do the geolocation we used the tulip tool from the Stanford
+National Accerleator Lab. One of the problems we face with geolocation was the 
+accuracy which we 
+
+\subsubsection{Reverse DNS}
 
 \section{Usage}
 
