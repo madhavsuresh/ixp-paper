@@ -124,15 +124,12 @@ We made the assumption that a peer that experiences a larger than average
 latency hop is most likely a remote peer. There were of course false positives, but 
 through our filtering process we hoped to remove of those. With a set of traceroutes from
 Dasu \cite{Sanchez:2011} we narrowed down the traces to routes that were known to go through IXPs.
-We then set a threshold for latency around \{WHAT WAS THE LATENCY?\}ms which we determined through
-looking at the average trace of peers connected at the IXP. At this point the system has ouputted 
-what it thinks are long haul links. It then moves to corroborate this set against geolocation data.
 \subsubsection{Geolocation}
 Given the IPs that we suspect to be longhaul links we use geolocation on the IP to determine where
 the interface is located. If the interface is not located in the same area, the we have found a 
-remote peering, if it is we discard the IP. To do the geolocation we used the tulip tool from the Stanford
-National Accerleator Lab. One of the problems we face with geolocation was the 
-accuracy from the various geolocation techniques. Tulip provides for four geolocation techniques: Apollonius,Trilateration, Geoip, and constraint based geolocation (CBG).
+remote peering, if it is we discard the IP. To do the geolocation we used the Tulip tool from the Stanford
+National Accerleator Lab. 
+Tulip provides for four geolocation techniques: Apollonius,Trilateration, Geoip, and constraint based geolocation (CBG).
 \paragraph{Trilateration}
 Trilateration uses three vantage points in order to pin point the desired host. The estimation technique tries to find the intersection of 
 circles with the radius determined by the latency between the two hosts. Problems can arise with this technique because of routing delays
@@ -172,13 +169,14 @@ other heuristics.
 \subsection{Geolocation}
 Given the long haul links, we had a python script which queried Tulip, and then fed the coordinates into the Google maps api in order to find the country code.
 There were some issues with this because Tulip is currently under development. This lead to some of the metrics being intermittentenly unavailable.
+\subsection{Reverse DNS}
+For the IPs of suspected remote ASes we ran a reverse DNS query and tried to feed them to undns from scriptroute.
+Unforunately the libraries that scriptroute uses are stale, which lead to a low match rate rendering this heuristic unusable.
+An interesting note is that 771 of the hosts were pingable from their IPs but not pingable from their reverse DNS names.
 
-Our protoype implements the first two stages that we outlined. We were unable to complete the reverse dns step, as existing tools 
-had stale libraries that didn't match many of the hosts we had. For the long haul links we wrote a java program that analyzed traceroutes
-from Dasu and for the geolocation. We used tulip as well as google maps api to determine country location in a python script.
-A location esimate was accepted only if the country was the same for two out of the three techniques.
- As mentioned in the previous discussion for future work we plan on 
-narrowing down which of the geolocation techniques are valid for a given region first in order to get more results.
+
+After these heuristics we would either label suspected ASes as remote peers if they hit our criteria. Over all the traceroutes if ASes were consistently marked as remote peers then we globally deemed them remote peers. Over all the traceroutes if ASes were consistently marked as remote peers then we globally deemed them remote peers.
+
 
 \section{Evaluation}
 \label{sec:approach}
