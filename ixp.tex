@@ -138,7 +138,7 @@ Trilateration uses three vantage points in order to pin point the desired host. 
 circles with the radius determined by the latency between the two hosts. Problems can arise with this technique because of routing delays
 which can lead to latencies that don't necessarily correspond with absolute distance. For example, a latency measurement can be slowed down by queueing delay
 making the distance seem much longer than ground truth to the algorithm. Multilateration is a technique that attempts to overcome this through using more than three
-vantage points (three is simply a minimum requirement), CBG includes this, however tulip's support for CBG was intermittent.
+vantage points (three is simply a minimum requirement), 
 \paragraph{Constraint based Geolocation}
 CBG is very similar to trilateration - it uses multilateration, however it attempts to transform delay measurements 
 to geographic distance constraints and then applies multilateration to infer the real location. \cite{Gueye:2006}
@@ -160,6 +160,19 @@ For future work, armed with the locale of a host, we can elimiate certain geoloc
 
 
 \section{Implementation}
+\subsection{Long Haul Latencies}
+We implemented a java tool that formats traceroute latencies, and determines if the hop latency is decreasing monotonically.
+A monotonic increase in latency was imperative because that implies that each hop is a greater distance from the host than the previous host.
+In order to determine that the link is long haul, we look at the hop at the IXP or the hop after the IXP to the exiting AS.
+A long haul link was characterized as having a hop that had latency greater than the average latency plus two times the standard deviation, where the 
+standard deviation was greater than fifty.
+$$ longhaul = rtt > mean_{rtt} + 2\cdot \sigma, \sigma > 50$$
+We choose two as the multiplier value because it seemed like a good idea at the time. Given the longhaul links, we identified the ASes located adjacaent to the IXP hop and fed them into our 
+other heuristics.
+\subsection{Geolocation}
+Given the long haul links, we had a python script which queried Tulip, and then fed the coordinates into the Google maps api in order to find the country code.
+There were some issues with this because Tulip is currently under development. This lead to some of the metrics being intermittentenly unavailable.
+
 Our protoype implements the first two stages that we outlined. We were unable to complete the reverse dns step, as existing tools 
 had stale libraries that didn't match many of the hosts we had. For the long haul links we wrote a java program that analyzed traceroutes
 from Dasu and for the geolocation. We used tulip as well as google maps api to determine country location in a python script.
