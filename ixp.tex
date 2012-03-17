@@ -185,10 +185,16 @@ After these heuristics we would either label suspected ASes as remote peers if t
 \label{sec:evaluation}
 We evaluated our tool against using data available from AMS-IX, an IXP from Amersterdam, as ground truth.
 AMS-IX has 483 member ASes with 410 directly connected, and 73 remotely connected.
-We were able to identify around 8,000 peerings, 100 of which involved remote ASes.
+We were able to identify around 8,000 peerings, 638 of which involved known remote peerings.
+In our sample we were had 38/73 known remote ASes, which was determined through the AS number.
+The hop latency test showed that 442 of the peerings showed a high-latency jump. When we ran the geolocation tool on it, 30\% of the
+probed IPs timed out, and 33\% failed to pass our threshold of 3/4 consistent mapping. This left only 37\% of the mappings that were properly
+mapped to a country code. We discuss the volatility of the geolocation in the discussion.
 \subsection{Accuracy of Tool}
-Our tool was able to correctly around fifty percent of the remote peerings.
-\{FILL OUT WITH ACTUAL DATA\}
+Our tool mapped 16\% of the remote peerings with both endpoints in different countries, which leaves 84\% of the peerings unmapped.
+Out of the 38 known remote ASes in our sample, we were able to correctly identify 47\% of them.  By relaxing the geolocation constraints
+the tool discovered close to 95\% of all discoverable remote ASes. The biggest failure of the tool was that 400 pairs of peerings were defined as 
+remote peerings for known non-remote ASes. This is covered more in the discussion.
 \section{Discussion}
 We were faced with a couple of challenges that affected the confidence of our results.
 \subsection{Long Haul Link Issues}
@@ -215,6 +221,10 @@ In addition getting a relevant library for the reverse dns geolocation could be 
 us narrow down which method to use and which vantage points to select for geolocation.
 What we learned is that our tool needs to be more intelligent than what it currently is. Our approach is just one heuristic applied after another, however a more intelligent design would
 choose how to apply a heuristic based on the previous result. This could prove to be more powerful and hopefully reduce the noise in our results.
+
+All this being said, we are unsure if geolocation is worth it if it cannot be accurate to at least a country level. It ended up confusing our results and nullifying some of the remote peerings we found.
+Without the country code restraints we found, we would have correctly identified up to 95\% of the remote peerings. As mentioned above, knowing which geolocation technique to use could have removed
+this confusion.
 
 \section{Future Work}
 \label{sec:future}
